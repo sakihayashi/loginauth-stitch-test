@@ -4,6 +4,13 @@ import { stringify } from 'qs'
 import { serialize } from 'dom-form-serializer'
 import Recaptcha from 'react-google-recaptcha'
 
+import {
+    Stitch,
+    AnonymousCredential,
+    RemoteMongoClient,
+    UserPasswordAuthProviderClient
+  } from "mongodb-stitch-browser-sdk";
+
 import './Form.css'
 
 const RECAPTCHA_KEY = '6LdDK64UAAAAADtq1Mt1f-cuX3pdaeysEbFYt-7_';
@@ -14,9 +21,9 @@ function encode(data) {
     .join("&");
 }
 
-class Form extends React.Component {
+class LogInSignUpForm extends React.Component {
   static defaultProps = {
-    name: 'newHamster',
+    name: 'forumUser',
     subject: '', // optional subject of the notification email
     action: '',
     successMessage: 'メッセージが送信されました。お問い合わせいただきありがとうございます。',
@@ -26,12 +33,69 @@ class Form extends React.Component {
 
   state = {
     alert: '',
-    disabled: false
+    disabled: false,
+    email: '',
+    password: ''
   }
 
   handleRecaptcha = value => {
     this.setState({ "g-recaptcha-response": value });
   };
+
+//   componentDidMount = () => {
+  
+//     //this client means belongs to the local class but not a state
+//     //get the data from the data base
+//     this.client = Stitch.initializeDefaultAppClient("userauthtest-cricc");
+
+//     const mongodb = this.client.getServiceClient(
+//       //connect to atlas
+//       RemoteMongoClient.factory,
+//       "mongodb-atlas"
+//     );
+
+//     //class varieble as DB name forum post
+//     this.db = mongodb.db("forum");
+
+//     this.displayTodosOnLoad();
+
+//     this.setState({ currentPath: this.props.location.pathname })
+//   }
+
+  handleInput = (event) => {
+    this.setState({
+        [event.target.name]: event.target.value
+    })
+  }
+
+  handleSignUp = e => {
+      e.preventDefault()
+
+    //   const userSignUpForm = e.target
+    //   const userData = serialize(userSignUpForm)
+    //   console.log('userData: ', userData)
+    //   console.log('userData.email: ', userData.email)
+
+      this.client = Stitch.initializeDefaultAppClient("userauthtest-cricc")
+
+      const mongodb = this.client.getServiceClient(
+      //connect to atlas
+      RemoteMongoClient.factory,
+      "mongodb-atlas"
+      );
+      this.db = mongodb.db("forum");
+
+      const emailPassClient = Stitch.defaultAppClient.auth
+        .getProviderClient(UserPasswordAuthProviderClient.factory);
+
+        emailPassClient.registerWithEmail(this.state.email, this.state.password)
+        .then(() => {
+            console.log("Successfully sent account confirmation email!");
+        })
+        .catch(err => {
+            console.log("Error registering new user:", err);
+        });
+  }
 
   handleSubmit = e => {
     e.preventDefault()
@@ -90,10 +154,7 @@ class Form extends React.Component {
           className="Form"
           name={name}
           method="post"
-          onSubmit={this.handleSubmit}
-          netlify-honeypot="bot-field"
-          data-netlify="true"
-          data-netlify-recaptcha="true"
+          onSubmit={this.handleSignUp}
         >
           <input type="hidden" name="form-name" value={name} />
           {this.state.alert && (
@@ -105,79 +166,26 @@ class Form extends React.Component {
               <input
                 className="Form--Input Form--InputText"
                 type="text"
-                placeholder="氏名"
-                name="lastname"
+                placeholder="Eメールアドレス"
+                name="email"
                 required
+                onChange={this.handleInput}
               />
-              <span>氏名</span>
+              <span>Eメールアドレス</span>
             </label>
             <label className="Form--Label">
               <input
                 className="Form--Input Form--InputText"
-                type="text"
-                placeholder="名前"
-                name="firstname"
+                type="password"
+                placeholder="パスワード"
+                name="password"
+                onChange={this.handleInput}
                 required
               />
-              <span>名前</span>
+              <span>パスワード</span>
             </label>
           </div>
-          <fieldset>
-            <label className="Form--Label Form--Radio">
-              <input
-                className="Form--RadioInput"
-                type="radio"
-                name="gender"
-                value="male"
-                defaultChecked
-              />
-              <span>男性</span>
-            </label>
-            <label className="Form--Label Form--Radio">
-              <input
-                className="Form--RadioInput"
-                type="radio"
-                name="gender"
-                value="female"
-              />
-              <span>女性</span>
-            </label>
-          </fieldset>
-          <label className="Form--Label">
-            <input
-              className="Form--Input Form--InputText"
-              type="email"
-              placeholder="Email"
-              name="emailAddress"
-              required
-            />
-            <span>Eメールアドレス</span>
-          </label>
-          <label className="Form--Label has-arrow">
-            <select
-              className="Form--Input Form--Select"
-              name="type"
-              defaultValue="Type of Enquiry"
-              required
-            >
-              <option disabled hidden>
-                質問項目
-              </option>
-              <option>サイトに関する意見と要望</option>
-              <option>バグをレポート</option>
-              <option>その他</option>
-            </select>
-          </label>
-          <label className="Form--Label">
-            <textarea
-              className="Form--Input Form--Textarea Form--InputText"
-              placeholder="Message"
-              name="message"
-              rows="10"
-              required
-            />
-            <span>Message</span>
-          </label>
+
           <label className="Form--Label Form-Checkbox">
             <input
               className="Form--Input Form--Textarea Form--CheckboxInput"
@@ -194,7 +202,7 @@ class Form extends React.Component {
           <input
             className="Button Form--SubmitButton"
             type="submit"
-            value="送信"
+            value="サインアップ"
             disabled={this.state.disabled}
           />
         </form>
@@ -203,4 +211,4 @@ class Form extends React.Component {
   }
 }
 
-export default Form
+export default LogInSignUpForm

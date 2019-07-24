@@ -3,6 +3,13 @@ import { Location } from '@reach/router'
 import { Link } from 'gatsby'
 import { Menu, X } from 'react-feather'
 import Logo from './Logo'
+import LoginModal from './Login-modal'
+
+import {
+  Stitch,
+  AnonymousCredential,
+  RemoteMongoClient
+} from "mongodb-stitch-browser-sdk";
 
 import './Nav.css'
 
@@ -10,11 +17,76 @@ export class Navigation extends Component {
   state = {
     active: false,
     activeSubNav: false,
-    currentPath: false
+    currentPath: false,
+    modalShow: false 
   }
 
-  componentDidMount = () =>
-    this.setState({ currentPath: this.props.location.pathname })
+  handleModalOpenAndClose = () => {
+    this.setState({ modalShow: !this.state.modalShow })
+  }
+
+  // componentDidMount = () => {
+  
+  //   //this client means belongs to the local class but not a state
+  //   //get the data from the data base
+  //   this.client = Stitch.initializeDefaultAppClient("userauthtest-cricc");
+
+  //   const mongodb = this.client.getServiceClient(
+  //     //connect to atlas
+  //     RemoteMongoClient.factory,
+  //     "mongodb-atlas"
+  //   );
+
+  //   //class varieble as DB name forum post
+  //   this.db = mongodb.db("forum");
+
+  //   // this.displayTodosOnLoad();
+
+  //   this.setState({ currentPath: this.props.location.pathname })
+  // }
+    
+
+  displayTodosOnLoad = () => {
+    // Anonymously log in and display comments on load
+    this.client.auth
+      .loginWithCredential(new AnonymousCredential())
+      .then(user => {
+        this.addTopic();
+      })
+      .catch(console.error);
+  }
+
+  displayTodos = () => {
+    // query the remote DB and update the component state
+    console.log(this.db);
+  
+    this.db
+      .collection("topic")
+      .find({}, { limit: 1000 })
+      .asArray()
+      .then(todos => {
+        console.log(todos)
+      });
+   }
+
+
+   addTopic = (event) => {
+    
+    // const { value } = this.state;
+    // insert the todo into the remote Stitch DB
+    // then re-query the DB and display the new todos
+    this.db
+      .collection("topic")
+      .insertOne({
+        owner_id: this.client.auth.user.id,
+        forumTitle: 'test',
+        forumQuestion: 'test question'
+      })
+      .then((test) => {
+        this.displayTodos();
+      })
+      .catch(console.error);
+  }
 
   handleMenuToggle = () => this.setState({ active: !this.state.active })
 
@@ -27,6 +99,9 @@ export class Navigation extends Component {
     })
 
   render() {
+    const modalProps ={
+      triggerText: 'This is a button to trigger the Modal'
+    }
     const { active } = this.state,
       { subNav } = this.props,
       NavLink = ({ to, className, children, ...props }) => (
@@ -95,6 +170,13 @@ export class Navigation extends Component {
             {active ? <X /> : <Menu />}
           </button>
         </div>
+        <LoginModal {...modalProps} />
+
+        {/* { this.state.modalShow ?  <LoginModal
+          show={this.state.modalShow}
+          onHide={this.handleModalOpenAndClose}
+        /> : ''}  */}
+        
       </nav>
     )
   }

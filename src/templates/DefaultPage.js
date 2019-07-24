@@ -22,6 +22,10 @@ export const DefaultPageTemplate = ({
 
     <section className="section">
       <div className="container">
+        <form>
+          <input></input>
+          <button></button>
+        </form>
         <Content source={body} />
         <SVGIcon src="/images/calendar.svg" />
       </div>

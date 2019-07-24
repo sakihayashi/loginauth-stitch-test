@@ -11,6 +11,7 @@ import './globalStyles.css'
 
 export default ({ children, meta, title }) => {
   return (
+
     <StaticQuery
       query={graphql`
         query IndexLayoutQuery {

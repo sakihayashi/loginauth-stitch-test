@@ -122,27 +122,7 @@ class Form extends React.Component {
               <span>名前</span>
             </label>
           </div>
-          <fieldset>
-            <label className="Form--Label Form--Radio">
-              <input
-                className="Form--RadioInput"
-                type="radio"
-                name="gender"
-                value="male"
-                defaultChecked
-              />
-              <span>男性</span>
-            </label>
-            <label className="Form--Label Form--Radio">
-              <input
-                className="Form--RadioInput"
-                type="radio"
-                name="gender"
-                value="female"
-              />
-              <span>女性</span>
-            </label>
-          </fieldset>
+          
           <label className="Form--Label">
             <input
               className="Form--Input Form--InputText"
@@ -153,38 +133,33 @@ class Form extends React.Component {
             />
             <span>Eメールアドレス</span>
           </label>
-          <label className="Form--Label has-arrow">
-            <select
-              className="Form--Input Form--Select"
-              name="type"
-              defaultValue="Type of Enquiry"
+          <label className="Form--Label">
+            <textarea
+              className="Form--Input Form--Textarea Form--InputText"
+              placeholder="質問のタイトルを記入"
+              name="titleForum"
+              rows="10"
               required
-            >
-              <option disabled hidden>
-                質問項目
-              </option>
-              <option>サイトに関する意見と要望</option>
-              <option>バグをレポート</option>
-              <option>その他</option>
-            </select>
+            />
+            <span>タイトル</span>
           </label>
           <label className="Form--Label">
             <textarea
               className="Form--Input Form--Textarea Form--InputText"
-              placeholder="Message"
-              name="message"
-              rows="10"
+              placeholder="質問内容"
+              name="question"
+              rows="1"
               required
             />
-            <span>Message</span>
+            <span>質問内容</span>
           </label>
           <label className="Form--Label Form-Checkbox">
             <input
               className="Form--Input Form--Textarea Form--CheckboxInput"
-              name="newsletter"
+              name="receiveUpdate"
               type="checkbox"
             />
-            <span>ニュースレターを受け取る</span>
+            <span>返信があったらメールを受け取る</span>
           </label>
           <Recaptcha
             ref="recaptcha"
