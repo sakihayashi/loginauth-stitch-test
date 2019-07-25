@@ -1,25 +1,19 @@
 import React, { Fragment } from 'react'
 import Helmet from 'react-helmet'
-import { stringify } from 'qs'
-import { serialize } from 'dom-form-serializer'
 import Recaptcha from 'react-google-recaptcha'
 
 import {
     Stitch,
-    AnonymousCredential,
-    RemoteMongoClient,
-    UserPasswordAuthProviderClient
+    UserPasswordAuthProviderClient,
+    UserPasswordCredential
   } from "mongodb-stitch-browser-sdk";
 
 import './Form.css'
 
 const RECAPTCHA_KEY = '6LdDK64UAAAAADtq1Mt1f-cuX3pdaeysEbFYt-7_';
-
-function encode(data) {
-  return Object.keys(data)
-    .map(key => encodeURIComponent(key) + "=" + encodeURIComponent(data[key]))
-    .join("&");
-}
+const client = Stitch.initializeDefaultAppClient('test007-lltnz');
+const emailPassClient = this.client.auth
+    .getProviderClient(UserPasswordAuthProviderClient.factory, "userpass");
 
 class LogInSignUpForm extends React.Component {
   static defaultProps = {
@@ -42,104 +36,28 @@ class LogInSignUpForm extends React.Component {
     this.setState({ "g-recaptcha-response": value });
   };
 
-//   componentDidMount = () => {
-  
-//     //this client means belongs to the local class but not a state
-//     //get the data from the data base
-//     this.client = Stitch.initializeDefaultAppClient("userauthtest-cricc");
-
-//     const mongodb = this.client.getServiceClient(
-//       //connect to atlas
-//       RemoteMongoClient.factory,
-//       "mongodb-atlas"
-//     );
-
-//     //class varieble as DB name forum post
-//     this.db = mongodb.db("forum");
-
-//     this.displayTodosOnLoad();
-
-//     this.setState({ currentPath: this.props.location.pathname })
-//   }
-
   handleInput = (event) => {
     this.setState({
         [event.target.name]: event.target.value
     })
   }
 
-  handleSignUp = e => {
-      e.preventDefault()
+// Register a new application user when the user submits their information
+  async handleSignup() {
+  
+    try {
+    
+      await emailPassClient.registerWithEmail(this.state.email, this.state.password)
+      showPostRegistrationState()
+      displaySuccess("Successfully registered. Check your inbox for a confirmation email.")
 
-    //   const userSignUpForm = e.target
-    //   const userData = serialize(userSignUpForm)
-    //   console.log('userData: ', userData)
-    //   console.log('userData.email: ', userData.email)
-
-      this.client = Stitch.initializeDefaultAppClient("userauthtest-cricc")
-
-      const mongodb = this.client.getServiceClient(
-      //connect to atlas
-      RemoteMongoClient.factory,
-      "mongodb-atlas"
-      );
-      this.db = mongodb.db("forum");
-
-      const emailPassClient = Stitch.defaultAppClient.auth
-        .getProviderClient(UserPasswordAuthProviderClient.factory);
-
-        emailPassClient.registerWithEmail(this.state.email, this.state.password)
-        .then(() => {
-            console.log("Successfully sent account confirmation email!");
-        })
-        .catch(err => {
-            console.log("Error registering new user:", err);
-        });
+    } catch(e) {
+      handleError(e)
+    }
   }
 
-  handleSubmit = e => {
-    e.preventDefault()
-    if (this.state.disabled) return
 
-    const form = e.target
-    const data = serialize(form)
-    console.log('form: ', form);
-    
-    console.log('data: ', data);
-    
-    this.setState({ disabled: true })
-    fetch(form.action + '?' + stringify(data), {
-      method: 'POST',
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: encode({
-        "form-name": form.getAttribute("name"),
-        ...this.state
-      })
-    })
-      .then(res => {
-        console.log('what is in res: ', res);
-        
-        if (res.ok) {
-          return res
-        } else {
-          throw new Error('Network error')
-        }
-      })
-      .then(() => {
-        form.reset()
-        this.setState({
-          alert: this.props.successMessage,
-          disabled: false
-        })
-      })
-      .catch(err => {
-        console.error(err)
-        this.setState({
-          disabled: false,
-          alert: this.props.errorMessage
-        })
-      })
-  }
+
 
   render() {
     const { name} = this.props
