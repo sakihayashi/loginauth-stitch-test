@@ -5,14 +5,14 @@ import Recaptcha from 'react-google-recaptcha'
 import {
     Stitch,
     UserPasswordAuthProviderClient,
-    UserPasswordCredential
+    UserPasswordCredential    
   } from "mongodb-stitch-browser-sdk";
 
 import './Form.css'
 
 const RECAPTCHA_KEY = '6LdDK64UAAAAADtq1Mt1f-cuX3pdaeysEbFYt-7_';
 const client = Stitch.initializeDefaultAppClient('test007-lltnz');
-const emailPassClient = this.client.auth
+const emailPassClient = client.auth
     .getProviderClient(UserPasswordAuthProviderClient.factory, "userpass");
 
 class LogInSignUpForm extends React.Component {
@@ -48,11 +48,17 @@ class LogInSignUpForm extends React.Component {
     try {
     
       await emailPassClient.registerWithEmail(this.state.email, this.state.password)
-      showPostRegistrationState()
-      displaySuccess("Successfully registered. Check your inbox for a confirmation email.")
+      this.setState({
+        successMessage: '確認のメールを送りました。メールボックスをご確認の上、リンクをクリックして、登録完了です。'
+      })
 
     } catch(e) {
-      handleError(e)
+      console.log('error message: ', e);
+      
+      this.setState({
+        errorMessage: 'ユーザーは登録済みです。ログインして下さい。'
+      })
+      // handleError(e)
     }
   }
 
